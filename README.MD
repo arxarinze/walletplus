@@ -1,9 +1,22 @@
+SETUP DATBASE MYSQL:
+With:
+user - walletplus
+database - walletplus
+password - wallet2021@
+
+open the mysql console and write these commands:
+
+CREATE DATABASE walletplus
+CREATE USER 'walletplus'@'localhost' IDENTIFIED BY 'wallet2021@';
+GRANT ALL PRIVILEGES ON * . * TO 'walletplus'@'localhost';
+FLUSH PRIVILEGES;
+
 Installation:
 1. npm install or yarn install
 2. convert sample.env to .env
-3. npm run dev for development running
-4. npm start to build to production
-5. npm run test to runa unit tests
+3. `npm run dev` for development running
+4. `npm start` to build to production
+5. `npm run test` to runa unit tests
 
 
 API:
