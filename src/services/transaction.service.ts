@@ -8,7 +8,7 @@ export class TransactionService {
         let Transaction = db.Transaction;
         let normal = await db.Wallet.findOne({ where: { user_id: data.user_id, name: 'normal' } })
         let point = await db.Wallet.findOne({ where: { user_id: data.user_id, name: 'point' } })
-    
+
         try {
             if (data.amount < 5000) {
                 await Transaction.create({
@@ -26,7 +26,7 @@ export class TransactionService {
             else {
                 try {
                     await db.sequelize.transaction(async (transaction: any) => {
-                    
+
 
                         await Transaction.create({
                             user_id: data.user_id,
@@ -79,28 +79,48 @@ export class TransactionService {
             }
         }
     }
-    async getAll(){
-        
+    async getAll(userId: number, page: number, limit: number, offset: number, res:any) {
+        let Transaction = db.Transaction;
+        Transaction.findAndCountAll()
+            .then((data: any) => {
+                let pages = Math.ceil(data.count / limit);
+                offset = limit * (page - 1);
+                Transaction.findAll({
+                    limit: limit,
+                    offset: offset,
+                    $sort: { id: 1 }
+                })
+                    .then((transactions: any) => {
+                        
+                        res.status(200).json({data: { 'result': transactions, 'count': data.count, 'pages': pages }})
+                    });
+            })
+            .catch(function (error: any) {
+                return {
+                    status: 500,
+                    message: "An Error Occured"
+                }
+            });
     }
-    async checkBalance(userId:number){
+    async checkBalance(userId: number) {
         let walletId = await db.Wallet.findOne({ where: { user_id: userId, name: 'normal' } })
         let pointId = await db.Wallet.findOne({ where: { user_id: userId, name: 'point' } })
         let credit = await db.Transaction.findAll({
-            where:{
+            where: {
                 user_id: userId,
                 wallet_id: walletId.id,
-                type:'credit'
+                type: 'credit'
             }
         })
         let debit = await db.Transaction.findAll({
-            where:{
+            where: {
                 user_id: userId,
                 wallet_id: walletId.id,
-                type:'debit'
+                type: 'debit'
             }
         })
         let points = await db.Transaction.findAll({
-            where:{
+            where: {
                 user_id: userId,
                 wallet_id: pointId.id,
             }
@@ -108,22 +128,22 @@ export class TransactionService {
         let totalDebit = 0
         let totalCredit = 0
         let totalPoint = 0
-        points.map((amount: any)=>{
+        points.map((amount: any) => {
             totalPoint = totalPoint + parseFloat(amount.amount);
         })
-        credit.map((amount: any)=>{
+        credit.map((amount: any) => {
             totalCredit = totalCredit + parseFloat(amount.amount);
         })
-        debit.map((amount: any)=>{
+        debit.map((amount: any) => {
             totalDebit = totalDebit + parseFloat(amount.amount);
         })
         return {
-            total: totalCredit-totalDebit,
+            total: totalCredit - totalDebit,
             points: totalPoint
         }
 
     }
-    async getTotalBalance(){
+    async getTotalBalance() {
 
     }
     async transfer(data: any) {
@@ -137,16 +157,16 @@ export class TransactionService {
                 status: 404
             }
         }
-        if(
+        if (
             checkTouser.id == data.user_id
-        ){
+        ) {
             return {
                 message: "Can't Transfer To Yourself",
                 status: 422
-            } 
+            }
         }
         console.log((await this.checkBalance(data.user_id)));
-        if((await this.checkBalance(data.user_id)).total < data.amount){
+        if ((await this.checkBalance(data.user_id)).total < data.amount) {
             return {
                 message: "Insufficient Funds",
                 status: 422

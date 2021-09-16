@@ -29,42 +29,42 @@ export class TransactionController {
         const amount = req.body.amount;
         const description = req.body.description;
         let payload = {
-            user_id,to_user, description, amount
+            user_id, to_user, description, amount
         }
         let result: any = await new TransactionService().transfer(payload);
         res.status(result.status).json({
             message: result.message,
-            data:{
+            data: {
                 transferId: result?.data
             }
         });
     }
-    async balance(req:any, res:any){
+    async balance(req: any, res: any) {
         const user_id = req.user.id;
         try {
             let result: any = await new TransactionService().checkBalance(user_id);
             res.status(200).json({
-                data:{
+                data: {
                     balanceTotal: result.total,
                     points: result.points
                 }
             });
         } catch (error) {
-            
+
         }
     }
-    async getAll(req:any, res:any){
+    async getAll(req: any, res: any) {
         const user_id = req.user.id;
+        let limit = 50;   // number of records per page
+        let offset = 0;
+        let page = req.params.page;      // page number
         try {
-            let result: any = await new TransactionService().getAll(user_id);
-            res.status(200).json({
-                data:{
-                    balanceTotal: result.total,
-                    points: result.points
-                }
-            });
+            await new TransactionService().getAll(user_id, page, limit,offset, res);
         } catch (error) {
-            
+            return {
+                status: 500,
+                message: "An Error Occured"
+            }
         }
     }
 }

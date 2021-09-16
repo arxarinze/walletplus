@@ -15,7 +15,7 @@ transaction.post('/transfer', [
 ],authMiddleware, transactionController.transfer);
 
 transaction.get('/balance', authMiddleware, transactionController.balance);
-transaction.get('/', authMiddleware, transactionController.getAll)
+transaction.get('/:page', authMiddleware, transactionController.getAll)
 
 
 export default transaction
